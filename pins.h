@@ -1,0 +1,15 @@
+// R700
+#define R700_READ_PIN 18
+#define R700_OK_PIN 11
+#define R700_NOK_PIN 12
+
+// MOTOR
+#define MOTOR_ON_PIN 39
+#define MOTOR_REVERSE_PIN 40
+#define MOTOR_SPEED_1_PIN 41
+#define MOTOR_SPEED_2_PIN 42
+
+// SENSORS
+#define EMG_PIN 5
+#define SENSOR_IN_PIN 6
+#define SENSOR_OUT_PIN 7
