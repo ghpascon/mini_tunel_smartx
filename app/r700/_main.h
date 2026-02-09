@@ -1,9 +1,13 @@
+#include <Bounce2.h>
+
 class R700
 {
     int read_pin;
     int ok_pin;
     int nok_pin;
     bool _is_reading = false;
+    Bounce deb_ok;
+    Bounce deb_nok;
 
 public:
     // Constructor: receives the pins
@@ -14,33 +18,41 @@ public:
     void setup()
     {
         pinMode(read_pin, OUTPUT);
-        pinMode(ok_pin, INPUT_PULLUP);
-        pinMode(nok_pin, INPUT_PULLUP);
+        pinMode(ok_pin, INPUT_PULLDOWN);
+        pinMode(nok_pin, INPUT_PULLDOWN);
+        deb_ok.attach(ok_pin);
+        deb_ok.interval(50);
+        deb_nok.attach(nok_pin);
+        deb_nok.interval(50);
         mySerial.write("R700 initialized");
+    }
+
+    // Atualiza o estado dos botões (deve ser chamado no loop)
+    void update()
+    {
+        deb_ok.update();
+        deb_nok.update();
     }
 
     // Reads the state of the read pin
     int get_read()
     {
-        mySerial.write("Getting R700 read state: " + String(_is_reading));
         return _is_reading;
     }
 
     // Writes to the read pin
     void read(bool state)
     {
-        digitalWrite(read_pin, state ? HIGH : LOW);
+        digitalWrite(read_pin, state ? LOW : HIGH);
         _is_reading = state;
-        mySerial.write("Setting R700 read to " + String(state));
     }
 
     // Returns the state of ok/nok pins: 0 = none, 1 = ok, 2 = nok
     int get_state()
     {
-        if (digitalRead(ok_pin) == LOW)
-
+        if (deb_ok.read() == HIGH)
             return 1;
-        if (digitalRead(nok_pin) == LOW)
+        if (deb_nok.read() == HIGH)
             return 2;
         return 0;
     }

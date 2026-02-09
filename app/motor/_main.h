@@ -1,11 +1,12 @@
 class Motor
 {
+public:
     int on_pin;
     int reverse_pin;
     int speed_pin_1;
     int speed_pin_2;
-
-public:
+    bool _is_on = false;
+    int _speed = 1;
     // Constructor: receives the pins
     Motor(int on_pin, int reverse_pin, int speed_pin_1, int speed_pin_2)
         : on_pin(on_pin), reverse_pin(reverse_pin), speed_pin_1(speed_pin_1), speed_pin_2(speed_pin_2) {}
@@ -13,39 +14,49 @@ public:
     // Initializes all pins as output
     void setup()
     {
-        pinMode(on_pin, OUTPUT);
-        pinMode(reverse_pin, OUTPUT);
-        pinMode(speed_pin_1, OUTPUT);
-        pinMode(speed_pin_2, OUTPUT);
+        pinMode(on_pin, INPUT_PULLUP);
+        pinMode(reverse_pin, INPUT_PULLUP);
+        pinMode(speed_pin_1, INPUT_PULLUP);
+        pinMode(speed_pin_2, INPUT_PULLUP);
 
         mySerial.write("Motor initialized");
+    }
+
+    int getSpeed()
+    {
+        return _speed;
     }
 
     // Sets speed: 1 to 4 -> 0,0; 0,1; 1,0; 1,1
     void setSpeed(int speed)
     {
+        if (speed < 1)
+            speed = 1;
+        if (speed > 4)
+            speed = 4;
+        _speed = speed;
         mySerial.write("Setting motor speed to " + String(speed));
         switch (speed)
         {
         case 1:
-            digitalWrite(speed_pin_1, LOW);
-            digitalWrite(speed_pin_2, LOW);
+            pinMode(speed_pin_1, INPUT_PULLUP);
+            pinMode(speed_pin_2, INPUT_PULLUP);
             break;
         case 2:
-            digitalWrite(speed_pin_1, LOW);
-            digitalWrite(speed_pin_2, HIGH);
+            pinMode(speed_pin_1, INPUT_PULLUP);
+            pinMode(speed_pin_2, OUTPUT);
             break;
         case 3:
-            digitalWrite(speed_pin_1, HIGH);
-            digitalWrite(speed_pin_2, LOW);
+            pinMode(speed_pin_1, OUTPUT);
+            pinMode(speed_pin_2, INPUT_PULLUP);
             break;
         case 4:
-            digitalWrite(speed_pin_1, HIGH);
-            digitalWrite(speed_pin_2, HIGH);
+            pinMode(speed_pin_1, OUTPUT);
+            pinMode(speed_pin_2, OUTPUT);
             break;
         default:
-            digitalWrite(speed_pin_1, LOW);
-            digitalWrite(speed_pin_2, LOW);
+            pinMode(speed_pin_1, OUTPUT);
+            pinMode(speed_pin_2, OUTPUT);
             break;
         }
     }
@@ -53,8 +64,14 @@ public:
     // Sets motor ON/OFF
     void setOn(bool on, bool reverse = false)
     {
-        mySerial.write("Setting motor ON to " + String(on) + ", reverse to " + String(reverse));
-        digitalWrite(on_pin, on ? HIGH : LOW);
-        digitalWrite(reverse_pin, reverse ? HIGH : LOW);
+        pinMode(on_pin, on ? OUTPUT : INPUT_PULLUP);
+        pinMode(reverse_pin, reverse ? OUTPUT : INPUT_PULLUP);
+        _is_on = on;
+    }
+
+    // Returns if motor is ON
+    bool getOn()
+    {
+        return _is_on;
     }
 };

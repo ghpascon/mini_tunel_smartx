@@ -18,13 +18,17 @@ public:
         else if (cmd.startsWith("#speed:"))
         {
             cmd.replace("#speed:", "");
-            motors.setSpeed(cmd.toInt());
+            motor.setSpeed(cmd.toInt());
         }
         else if (cmd.startsWith("#retry:"))
         {
             cmd.replace("#retry:", "");
             controller.setRetryCount(cmd.toInt());
         }
+        else if (cmd == "#approve")
+            controller.approveBox();
+        else if (cmd == "#reject")
+            controller.rejectBox();
         else
             mySerial.write("Received command: " + cmd);
     }
