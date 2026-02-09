@@ -37,12 +37,9 @@ private:
         Lcm.changePicId(load_screen);
         if (millis() < 5000)
             return;
+        mySerial.write("Changing to main screen...");
         Lcm.changePicId(main_screen);
-        int pic_id = Lcm.readPicId();
-        if (pic_id == main_screen)
-        {
-            loaded = true;
-        }
+        loaded = true;
     }
 
     void check_buttons()

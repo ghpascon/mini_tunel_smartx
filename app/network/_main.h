@@ -1,28 +1,40 @@
 
-#include <WiFi.h>
 #include <WebServer.h>
-#include <ArduinoOTA.h>
+#include <Update.h>
+WebServer server(80);
 
 class MyNetwork
 {
 public:
-    MyNetwork()
-        : server(80) {}
-
     void setup(const char *ssid, const char *password)
     {
-        WiFi.mode(WIFI_STA);
-        WiFi.begin(ssid, password);
-        unsigned long startAttemptTime = millis();
-        while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 20000)
-        {
-            delay(500);
-        }
-        if (WiFi.status() != WL_CONNECTED)
-        {
-            // Could not connect, optionally handle fallback
-        }
+        WiFi.disconnect(true);
+        WiFi.mode(WIFI_AP);
+        WiFi.setTxPower(WIFI_POWER_19_5dBm);
+        WiFi.softAP(ssid, password, 6, false, 2);
 
+        register_routes();
+
+        server.begin();
+        // OTA via HTTP only, no ArduinoOTA
+
+        mySerial.write("WiFi AP started with SSID: " + String(ssid));
+        mySerial.write("AP IP address: " + getLocalIP());
+    }
+
+    void update()
+    {
+        server.handleClient();
+    }
+
+    String getLocalIP() const
+    {
+        return WiFi.softAPIP().toString();
+    }
+
+private:
+    void register_routes()
+    {
         server.on("/get_status", [this]()
                   {
 String json = "{";
@@ -75,24 +87,5 @@ if (Update.end(true)) {
 Update.printError(Serial);
 }
 } });
-
-        server.begin();
-
-        ArduinoOTA.setHostname("esp32-device");
-        ArduinoOTA.begin();
     }
-
-    void update()
-    {
-        server.handleClient();
-        ArduinoOTA.handle();
-    }
-
-    String getLocalIP() const
-    {
-        return WiFi.localIP().toString();
-    }
-
-private:
-    WebServer server;
 };

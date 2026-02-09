@@ -47,59 +47,54 @@ Settings settings;
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-void auxLoop(void *pvParameters)
-{
-    while (true)
-    {
-        checkSerial.check();
-        settings.handle();
-        display.loop();
-        my_network.update();
-        vTaskDelay(1);
-    }
+void auxLoop(void *pvParameters) {
+  while (true) {
+    checkSerial.check();
+    settings.handle();
+    display.loop();
+    vTaskDelay(1);
+  }
 }
 
-void setup_parameters()
-{
-    motor.setSpeed(settings.last_motor_speed);
-    controller.setRetryCount(settings.last_retry_count);
+void setup_parameters() {
+  motor.setSpeed(settings.last_motor_speed);
+  controller.setRetryCount(settings.last_retry_count);
 }
 
-void setup()
-{
-    settings.begin();
+void setup() {
+  settings.begin();
 
-    // Set your WiFi credentials here
-    my_network.setup(ssid, password);
+  mySerial.setup();
+  led_rgb.setup();
 
-    mySerial.setup();
-    led_rgb.setup();
+  r700.setup();
+  motor.setup();
+  sensors.setup();
 
-    r700.setup();
-    motor.setup();
-    sensors.setup();
+  setup_parameters();
 
-    setup_parameters();
+  display.setup();
+  my_network.setup(ssid, password);
 
-    display.setup();
-
-    xTaskCreatePinnedToCore(
-        auxLoop,   // Função da task
-        "auxLoop", // Nome da task
-        2048,      // Stack size
-        NULL,      // Parametros
-        1,         // Prioridade
-        NULL,      // Handle
-        1          // Core (0=PRO, 1=APP)
-    );
+  xTaskCreatePinnedToCore(
+    auxLoop,    // Função da task
+    "auxLoop",  // Nome da task
+    2048,       // Stack size
+    NULL,       // Parametros
+    1,          // Prioridade
+    NULL,       // Handle
+    1           // Core (0=PRO, 1=APP)
+  );
 }
 
-void loop()
-{
-    // update sensors
-    sensors.update();
-    r700.update();
+void loop() {
+  // update sensors
+  sensors.update();
+  r700.update();
 
-    // controller loop
-    controller.loop();
+  // controller loop
+  controller.loop();
+
+  // Handle my_network
+  my_network.update();
 }
