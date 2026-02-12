@@ -40,6 +40,11 @@ bool Controller::feeder_check_rejected()
 void Controller::feeder_check_sensor()
 {
     // get feeder sensor state
+    if (box_in_process)
+    {
+        feeder_motor.setOn(false);
+        return;
+    }
     static bool last_feeder_state = false;
     bool feeder_state = sensors.readFeederSensor();
     if (feeder_state == last_feeder_state)

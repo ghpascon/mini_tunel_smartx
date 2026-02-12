@@ -61,6 +61,10 @@ public:
 
     void setRetryCount(int count)
     {
+        if (count < 0)
+            count = 0;
+        if (count > 10)
+            count = 10;
         retry_count = count;
         mySerial.write("#retry_count_set:" + String(retry_count));
     }
@@ -212,10 +216,12 @@ private:
         static bool last_in_state = false;
         bool in_state = sensors.readIn();
 
+        motor.setOn(in_state);
+
         if (in_state == last_in_state)
             return;
         last_in_state = in_state;
-        if (in_state)
+        if (!in_state)
         {
             onBoxDetected();
         }

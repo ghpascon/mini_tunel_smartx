@@ -42,6 +42,7 @@ void Controller::onBoxApproved()
     box_approved = false;
     box_out_detected = false;
     motor.setOn(false);
+    r700.read(false);
     mySerial.write("#box_approved");
 }
 
@@ -51,5 +52,6 @@ void Controller::onBoxRejected()
     box_rejected = false;
     box_out_detected = false;
     motor.setOn(false);
+    r700.read(false);
     mySerial.write("#box_rejected");
 }
