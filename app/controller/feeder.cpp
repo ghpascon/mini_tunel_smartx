@@ -13,47 +13,46 @@ bool Controller::feeder_check_emg()
 {
     if (!sensors.check_emergency_stop())
         return false;
-    feeder_motor.setOn(false);
     box_on_feeder = false;
-    feeder_rejected = false;
+    is_rejecting = false;
+    feeder_motor.setOn(false);
     return true;
 }
 
 bool Controller::feeder_check_rejected()
 {
-    // set reject var
+    int rejecting_time = 2000;
+    // is rejecting
+    static unsigned long prevent_time = 0;
 
-    if (box_rejected)
-    {
-        feeder_rejected = true;
-        box_on_feeder = true;
-    }
-    if (!feeder_rejected)
+    if (millis() - prevent_time < rejecting_time)
         return false;
 
-    bool feeder_sensor = sensors.readFeederSensor();
+    if (box_rejected)
+        is_rejecting = true;
+    if (!is_rejecting)
+        return false;
+
+    // feeder motor
     static unsigned long current_time = 0;
-    if (feeder_sensor)
+    bool sensor_state = sensors.readFeederSensor();
+    if (sensor_state)
         current_time = millis();
 
-    if (millis() - current_time < 1000)
+    if (millis() - current_time < rejecting_time)
         feeder_motor.setOn(false);
     else
         feeder_motor.setOn(true, true);
-
-    // wait for sensor to be triggered
-    static bool last_feeder_sensor = false;
-    if (feeder_sensor == last_feeder_sensor)
-        return true;
-    last_feeder_sensor = feeder_sensor;
-
     // when box out
-    if (!feeder_sensor)
-    {
-        feeder_rejected = false;
-        box_on_feeder = false;
-        feeder_motor.setOn(false);
+    static bool last_feeder_sensor = false;
+    if (sensor_state == last_feeder_sensor)
         return true;
+    last_feeder_sensor = sensor_state;
+    if (!sensor_state)
+    {
+        prevent_time = millis();
+        is_rejecting = false;
+        feeder_motor.setOn(false);
     }
     return true;
 }
@@ -97,9 +96,10 @@ void Controller::feeder_timeout()
     static unsigned long current_time = 0;
     if (!feeder_motor.getOn())
         current_time = millis();
-    if (millis() - current_time < (feeder_rejected ? 5000 : 2000))
+    if (millis() - current_time < (box_rejected ? 5000 : 2000))
         return;
+
     box_on_feeder = false;
-    feeder_rejected = false;
+    is_rejecting = false;
     feeder_motor.setOn(false);
 }

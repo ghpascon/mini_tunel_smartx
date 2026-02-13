@@ -16,7 +16,7 @@ public:
     bool feeder_check_rejected();
     bool feeder_check_emg();
     bool box_on_feeder = false;
-    bool feeder_rejected = false;
+    bool is_rejecting = false;
 
     // vars
     bool box_in_process = false;
@@ -216,6 +216,7 @@ private:
         if (box_in_process)
             return;
 
+        current_retry = 0;
         static bool last_in_state = false;
         bool in_state = sensors.readIn();
 
@@ -235,7 +236,7 @@ private:
         static bool last_out_state = false;
         if (retry_finished)
         {
-            last_out_state = sensors.readOut();
+            last_out_state = false;
             return;
         }
         bool out_state = sensors.readOut();
