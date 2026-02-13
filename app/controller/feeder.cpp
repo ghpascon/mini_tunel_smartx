@@ -1,5 +1,7 @@
 void Controller::feeder_loop()
 {
+    if (feeder_check_emg())
+        return;
     feeder_timeout();
     if (feeder_check_rejected())
         return;
@@ -7,9 +9,20 @@ void Controller::feeder_loop()
     feeder_check_box_inside();
 }
 
+bool Controller::feeder_check_emg()
+{
+    if (!sensors.check_emergency_stop())
+        return false;
+    feeder_motor.setOn(false);
+    box_on_feeder = false;
+    feeder_rejected = false;
+    return true;
+}
+
 bool Controller::feeder_check_rejected()
 {
     // set reject var
+
     if (box_rejected)
     {
         feeder_rejected = true;
@@ -18,11 +31,18 @@ bool Controller::feeder_check_rejected()
     if (!feeder_rejected)
         return false;
 
-    feeder_motor.setOn(true, true);
+    bool feeder_sensor = sensors.readFeederSensor();
+    static unsigned long current_time = 0;
+    if (feeder_sensor)
+        current_time = millis();
+
+    if (millis() - current_time < 1000)
+        feeder_motor.setOn(false);
+    else
+        feeder_motor.setOn(true, true);
 
     // wait for sensor to be triggered
     static bool last_feeder_sensor = false;
-    bool feeder_sensor = sensors.readFeederSensor();
     if (feeder_sensor == last_feeder_sensor)
         return true;
     last_feeder_sensor = feeder_sensor;
@@ -32,6 +52,7 @@ bool Controller::feeder_check_rejected()
     {
         feeder_rejected = false;
         box_on_feeder = false;
+        feeder_motor.setOn(false);
         return true;
     }
     return true;
@@ -74,7 +95,7 @@ void Controller::feeder_check_box_inside()
 void Controller::feeder_timeout()
 {
     static unsigned long current_time = 0;
-    if (box_on_feeder)
+    if (!feeder_motor.getOn())
         current_time = millis();
     if (millis() - current_time < (feeder_rejected ? 5000 : 2000))
         return;

@@ -14,6 +14,7 @@ public:
     void feeder_check_box_inside();
     void feeder_timeout();
     bool feeder_check_rejected();
+    bool feeder_check_emg();
     bool box_on_feeder = false;
     bool feeder_rejected = false;
 
@@ -134,8 +135,10 @@ private:
     void delayed_stop()
     {
         static unsigned long current_time = 0;
-        int timeout = box_rejected ? 500 : 1000;
+        int timeout = box_rejected ? 2000 : 1000;
         if (!box_out_detected)
+            current_time = millis();
+        else if (sensors.readOut() || sensors.readIn())
             current_time = millis();
         if (millis() - current_time < timeout)
             return;

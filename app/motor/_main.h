@@ -6,6 +6,7 @@ public:
     int speed_pin_1;
     int speed_pin_2;
     bool _is_on = false;
+    bool _is_reversed = false;
     int _speed = 1;
     // Constructor: receives the pins
     Motor(int on_pin, int reverse_pin, int speed_pin_1, int speed_pin_2)
@@ -67,11 +68,18 @@ public:
         pinMode(on_pin, on ? OUTPUT : INPUT_PULLUP);
         pinMode(reverse_pin, reverse ? OUTPUT : INPUT_PULLUP);
         _is_on = on;
+        if (on)
+            _is_reversed = reverse;
     }
 
     // Returns if motor is ON
     bool getOn()
     {
         return _is_on;
+    }
+
+    bool getReversed()
+    {
+        return _is_reversed;
     }
 };

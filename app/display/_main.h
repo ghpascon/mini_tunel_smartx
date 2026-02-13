@@ -133,23 +133,16 @@ private:
         static String last_status = "";
         static unsigned long last_update = 0;
         String status =
-            "MOTOR: " + String(motor.getOn() ? "ON" : "OFF") + "\n"
-                                                               "READING: " +
-            String(r700.get_read() ? "ON" : "OFF") + "\n"
-                                                     "STATUS: " +
+            "MOTOR: " + String(motor.getOn() ? "ON" : "OFF") + " Feeder: " + String(feeder_motor.getOn() ? "ON" : "OFF") + "\n" + "READING: " +
+            String(r700.get_read() ? "ON" : "OFF") + "\n" + "STATUS: " +
             String(controller.box_approved ? "APPROVED" : controller.box_rejected ? "REJECTED"
                                                                                   : "WAITING") +
-            "\n"
-            "RETRY: " +
-            String(controller.retry_count) + "\n"
-                                             "SPEED: " +
-            String(motor.getSpeed()) + "\n"
-                                       "EMG: " +
-            String(sensors.check_emergency_stop() ? "ON" : "OFF") + "\n"
-                                                                    "SENSOR IN: " +
-            String(sensors.readIn() ? "ON" : "OFF") + "\n"
-                                                      "SENSOR OUT: " +
-            String(sensors.readOut() ? "ON" : "OFF") + "\n";
+            "\n" + "RETRY: " + String(controller.retry_count) + "\n" + "SPEED: " +
+            String(motor.getSpeed()) + "\n" +
+            "EMG: " + String(sensors.check_emergency_stop() ? "ON" : "OFF") + "\n" +
+            "SENSOR Feeder: " + String(sensors.readFeederSensor() ? "ON" : "OFF") + "\n" +
+            "SENSOR IN: " + String(sensors.readIn() ? "ON" : "OFF") + "\n" +
+            "SENSOR OUT: " + String(sensors.readOut() ? "ON" : "OFF") + "\n";
         if (status != last_status || millis() - last_update >= 3000)
         {
             last_status = status;
